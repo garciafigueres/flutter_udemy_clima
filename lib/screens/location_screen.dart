@@ -24,13 +24,23 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   void updateUI(dynamic weatherData) {
-    String cityName = weatherData['name'];
+    String cityName;
+    setState(() {
+      if (weatherData == null) {
+        temperature = 0;
+        weatherIcon = 'Error';
+        temperatureMessage = 'No s\'ha pogut obtindre l\'oratge ara mateix.';
+        cityName = '';
+        return;
+      }
 
-    temperature = weatherData['main']['temp'].toInt();
-    temperatureMessage = 'A $cityName\n ${weather.getMessage(temperature)}';
+      cityName = weatherData['name'];
+      temperature = weatherData['main']['temp'].toInt();
+      temperatureMessage = 'A $cityName\n ${weather.getMessage(temperature)}';
 
-    var condition = weatherData['weather'][0]['id'];
-    weatherIcon = weather.getWeatherIcon(condition);
+      var condition = weatherData['weather'][0]['id'];
+      weatherIcon = weather.getWeatherIcon(condition);
+    });
   }
 
   @override
@@ -62,7 +72,10 @@ class _LocationScreenState extends State<LocationScreen> {
                     ),
                   ),
                   FlatButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      var weatherData = await weather.getLocationWeather();
+                      updateUI(weatherData);
+                    },
                     child: Icon(
                       Icons.location_city,
                       size: 50.0,
